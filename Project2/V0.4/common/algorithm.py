@@ -2,6 +2,9 @@ import numpy as np
 
 ALPHA_CLIP_VALUE = 25
 
+# --------------------------------------------------------------------------------------------------
+# AdaBoost Algorithm
+# --------------------------------------------------------------------------------------------------
 class AdaBoost:
     def __init__(self, weak_classifier_strategy):
         self.weak_classifier_strategy = weak_classifier_strategy
@@ -32,23 +35,15 @@ class AdaBoost:
             alphas.append(alpha)
 
             # Update sample weights
-            adjustments = np.where(
-                incorrect,
-                1 / (2 * (error + epsilon)),
-                1 / (2 * (1 - error + epsilon))
-            )
-            sample_weights *= adjustments
+            sample_weights *= np.exp(-alpha * y * y_pred)
             sample_weights /= np.sum(sample_weights)
-
-        # Print the entire classifiers list after training - sadly this was necessary at one point!
-        # print(f'[ada final TRAIN] Full classifiers list: {classifiers}')
 
         return classifiers, alphas
 
-    def predict(self, X, classifiers, alphas):     
-        # Weighted sum from all weak classifiers
+    def predict(self, X, classifiers, alphas):
         adaboost_classifier_prediction = np.array([
             alpha * clf.predict(X) for clf, alpha in zip(classifiers, alphas)
         ])
         predicted_value = np.sum(adaboost_classifier_prediction, axis=0)
         return np.sign(predicted_value), predicted_value
+
